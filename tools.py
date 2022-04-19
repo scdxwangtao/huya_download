@@ -1,8 +1,10 @@
 import shutil
 import os
+import time
+
 from fake_useragent import UserAgent
 import requests
-import http.client
+from requests.adapters import HTTPAdapter
 
 
 def mkdir(path, is_delete=False):
@@ -66,8 +68,32 @@ def get_url(url, referer=None):
     headers = {'User-Agent': ua.random, "Referer": referer}
     # stream=True   requests.exceptions.ChunkedEncodingError:
     # ('Connection broken: IncompleteRead(0 bytes read)', IncompleteRead(0 bytes read))
-    response = requests.get(url, headers=headers, stream=True)
-    return response
+    s = requests.Session()
+    # max_retries is the maximum number of retries. The total number of retries is 3 times plus the original request
+    s.mount('http://', HTTPAdapter(max_retries=3))
+    s.mount('https://', HTTPAdapter(max_retries=3))
+    start_time = time.time()
+    print("The current request link is：{}， Start request time is：{}"
+          .format(url, time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(start_time))))
+    try:
+        '''
+        If you set a single value as timeout, it looks like this:  
+        r = requests.get('https://github.com', timeout=5)
+        This timeout value will be used as a timeout for both connect and read.  
+        To specify separately, pass in a tuple:  
+        r = requests.get('https://github.com', timeout=(5, 25))
+        '''
+        response = s.get(url, headers=headers, stream=True, timeout=(5, 10))
+        end_time = time.time()
+        print("The current request link is：{}， End request time is：{}"
+              .format(url, time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(end_time))))
+        print("The current request link is：{}， The requested total time is：{}秒"
+              .format(url, round(end_time - start_time, 4)))
+        return response
+    except requests.exceptions.RequestException as e:
+        print(e)
+        print("Request failed!!! The current request link is：{}， The request end time is：{}"
+              .format(url, time.strftime('%Y-%m-%d %H:%M:%S')))
 
 
 def update_name(name):
