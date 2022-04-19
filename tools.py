@@ -1,7 +1,7 @@
 import shutil
 import os
 import time
-
+from pathlib import Path
 from fake_useragent import UserAgent
 import requests
 from requests.adapters import HTTPAdapter
@@ -33,11 +33,11 @@ def mkdir(path, is_delete=False):
     else:
         # If the directory exists, it is not created and a message
         # is displayed indicating that the directory already exists.
-        print("directory:" + path + ' the directory already exists, delete the original directory and '
-                                    'create a new directory.')
         try:
             # delete the original directory.
             if is_delete:
+                print("directory:" + path + ' the directory already exists, delete the original directory and '
+                                            'create a new directory.')
                 shutil.rmtree(path)
                 print("The original directory has been deleted.")
                 # Create the directory again.
@@ -73,7 +73,7 @@ def get_url(url, referer=None):
     s.mount('http://', HTTPAdapter(max_retries=3))
     s.mount('https://', HTTPAdapter(max_retries=3))
     start_time = time.time()
-    print("The current request link is：{}， Start request time is：{}"
+    print("The current request link is：{}  -->  Start request time is：{}"
           .format(url, time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(start_time))))
     try:
         '''
@@ -85,14 +85,14 @@ def get_url(url, referer=None):
         '''
         response = s.get(url, headers=headers, stream=True, timeout=(5, 10))
         end_time = time.time()
-        print("The current request link is：{}， End request time is：{}"
+        print("The current request link is：{} -->  End request time is：{}"
               .format(url, time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(end_time))))
-        print("The current request link is：{}， The requested total time is：{}秒"
+        print("The current request link is：{}  -->   The requested total time is：{}秒"
               .format(url, round(end_time - start_time, 4)))
         return response
     except requests.exceptions.RequestException as e:
         print(e)
-        print("Request failed!!! The current request link is：{}， The request end time is：{}"
+        print("Request failed!!! The current request link is：{} -->  The request end time is：{}"
               .format(url, time.strftime('%Y-%m-%d %H:%M:%S')))
 
 
@@ -102,7 +102,7 @@ def update_name(name):
     :param name: The name you want to change.
     :return: Modified name
     """
-    string = "~`!@#$%^&*()+-/=|\\[]{};:'\"<,>.?| "
+    string = "~`!@#$%^&*()+-/=|\\[]{};:'\"<,>.?|“‘ "
     # Check if the string contains any of the special symbols listed above and replace them with "_"
     for i in string:
         if i in name:
@@ -156,3 +156,41 @@ def is_or_not_file(path):
     :return:  True is File False is dir
     """
     return os.path.isfile(path)
+
+
+def save_video(video_name=None, video_url=None, video_path=None):
+    save_video_flag = False
+    start_time = time.time()
+    response = get_url(video_url)
+    my_file = Path("{}/{}.mp4".format(video_path, video_name))
+    if response.status_code == 200:
+        print("当前保存的视频名称为：{}， 开始保存视频时间为：{}"
+              .format(video_name, time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(start_time))))
+        with open(my_file, "wb") as f:
+            f.write(response.content)
+        end_time = time.time()
+        print("当前保存的视频名称为：{}， 结束保存视频时间为：{}"
+              .format(video_name, time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(end_time))))
+        print("当前保存的视频名称为：{}， 视频保存总用时间为：{}秒"
+              .format(video_name, round(end_time - start_time, 4)))
+        print("视频： {}/{}.mp4 下载成功!".format(video_path, video_name))
+        save_video_flag = True
+        return video_name, video_url, save_video_flag
+    else:
+        return video_name, video_url, save_video_flag
+
+
+def file_to_list(path):
+    """
+    Types  --> XXX.txt  -->  file name|id or url
+    :param path: file path
+    :return: video id or url lists
+    """
+    video_id_or_url_list = []
+    videos = read_file(path, "r")
+    for video in videos:
+        video_name = video.split("|")[0]
+        video_url_or_id = video.split("|")[1]
+        tmp = (video_name, video_url_or_id)
+        video_id_or_url_list.append(tmp)
+    return video_id_or_url_list
