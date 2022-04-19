@@ -70,8 +70,8 @@ def get_url(url, referer=None):
     # ('Connection broken: IncompleteRead(0 bytes read)', IncompleteRead(0 bytes read))
     s = requests.Session()
     # max_retries is the maximum number of retries. The total number of retries is 3 times plus the original request
-    s.mount('http://', HTTPAdapter(max_retries=3))
-    s.mount('https://', HTTPAdapter(max_retries=3))
+    s.mount('http://', HTTPAdapter(max_retries=9))
+    s.mount('https://', HTTPAdapter(max_retries=9))
     start_time = time.time()
     print("The current request link is：{}  -->  Start request time is：{}"
           .format(url, time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(start_time))))
@@ -83,7 +83,7 @@ def get_url(url, referer=None):
         To specify separately, pass in a tuple:  
         r = requests.get('https://github.com', timeout=(5, 25))
         '''
-        response = s.get(url, headers=headers, stream=True, timeout=(5, 10))
+        response = s.get(url, headers=headers, stream=True, timeout=(5, 300))
         end_time = time.time()
         print("The current request link is：{} -->  End request time is：{}"
               .format(url, time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(end_time))))

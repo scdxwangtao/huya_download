@@ -18,13 +18,13 @@ class HuYaDownload:
         # self.video_path = "../Download/Video"         # 相对路径
         self.video_path = "G:/Downloads/huya_video"  # 绝对路径
         self.temp_path = "../Download/Temp"
-        self.pool = threadpool.ThreadPool(128)  # 线程池
+        self.pool = threadpool.ThreadPool(32)  # 线程池
         self.download_video_count = 0  # 下载视频个数
         self.forum_page_list = []  # forum_page
         self.failure_list = []  # 视频下载失败后列表
         self.set_id = url.split("=")[-1]
-        tools.mkdir(self.video_path, False)
-        tools.mkdir(self.temp_path, True)
+        tools.mkdir(self.video_path, False)     # False为不清空文件夹
+        tools.mkdir(self.temp_path, True)       # True为清空文件夹
 
     def get_video_page_list(self, first_page=1, count_page=500):
         if first_page + count_page > 501:
